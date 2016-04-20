@@ -1,6 +1,6 @@
 from random import choice
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 
 
 # "__name__" is a special Python variable for the name of the current module
@@ -34,37 +34,48 @@ def greet_person():
 
     compliment = choice(AWESOMENESS)
 
-    return render_template("compliment.html",
+    html = render_template("compliment.html",
                                person=player,
                                compliment=compliment,
-                                )
+                               )
+    resp = make_response(html)
+    resp.set_cookie('player', 'person')
+
+    return resp
 
 @app.route('/game')
 def show_game_form():
     """play a game"""
 
-    play = request.args.get("yes")
+    play = request.args.get("game")
+    player = request.args.get("person")
 
+    player = request.cookies['player']
 
-    return render_template("game.html",
-                        yes=play
-                       )
+    if play == 'yes':
+        return render_template("game.html",
+                                )
+    else:
+        return render_template("goodbye.html",
+                                person=player,
+                                )
 
 
 @app.route('/madlib')
 def show_madlib():
     """creates story"""
 
-    frienemy = request.args.get("person")
+    frienemy = request.args.get("people")
     color = request.args.get("color")
     noun = request.args.get("noun")
     adjective = request.args.get("adjective")
 
     return render_template("madlib.html",
-                        person=frienemy,
+                        people=frienemy,
                         color=color,
                         noun=noun,
-                        adjective=adjective)
+                        adjective=adjective,
+                        )
 
 if __name__ == '__main__':
     # debug=True gives us error messages in the browser and also "reloads" our web app
